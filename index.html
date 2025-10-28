@@ -1,0 +1,159 @@
+<html>
+  <head>
+    <title>Apple Catcher</title>
+    <script src="classitem.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        transition: background-image 1s ease-in-out;
+      }
+
+      #keranjang {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      #infoPanel {
+        position: fixed;
+        top: 10px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.4);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        text-align: right;
+      }
+
+      #infoPanel span {
+        display: block;
+      }
+    </style>
+
+    <script>
+      $(document).ready(function () {
+        var score = 0;
+        var life = 3;
+        var time = 60;
+        var stuff = [];
+
+        // buat panel info di kanan atas
+        $("body").append(`
+          <div id="infoPanel">
+            <span>❤️ Life: <b id="life">${life}</b></span>
+            <span>🕒 Time: <b id="time">${time}</b></span>
+            <span>🍎 Score: <b id="score">${score}</b></span>
+          </div>
+        `);
+
+        // update panel info
+        function updatePanel() {
+          $("#life").text(life);
+          $("#score").text(score);
+          $("#time").text(time);
+        }
+
+        // gerakkan keranjang mengikuti posisi mouse
+        $(document).mousemove(function (event) {
+          $("#keranjang").css({ left: event.pageX - 40 + "px" });
+        });
+
+        // timer utama (buat jatuhkan buah)
+        let timer = setInterval(function () {
+          if (time <= 0 || life <= 0) {
+            clearInterval(timer);
+            alert("Game Over! Skor akhir: " + score);
+            return;
+          }
+
+          let test = new things();
+          stuff.push(test);
+          let id = "#" + test.id;
+          let divBaru = $("<div>", {
+            id: test.id,
+            html: test.img,
+          });
+
+          $("body").append(divBaru);
+          $(id).css({
+            position: "fixed",
+            left: test.x + "px",
+            top: test.y + "px",
+          });
+
+          // animasi jatuh
+          let timer2 = setInterval(function () {
+            test.methodturun();
+            $(id).css({ left: test.x + "px", top: test.y + "px" });
+
+            let keranjangRect = $("#keranjang")[0].getBoundingClientRect();
+            let buahRect = $(id)[0].getBoundingClientRect();
+
+            // deteksi tabrakan
+            if (
+              buahRect.bottom >= keranjangRect.top &&
+              buahRect.top <= keranjangRect.bottom &&
+              buahRect.right >= keranjangRect.left &&
+              buahRect.left <= keranjangRect.right
+            ) {
+              $(id).remove();
+              clearInterval(timer2);
+
+              if (test.type === 3) {
+                life--;
+                console.log("💣 Kena bom! Nyawa:", life);
+              } else {
+				if(test.type==1){
+					score += 10;
+				}else if(test.type==2){
+					
+					score += 5;
+				}
+                
+                console.log("🍎 Tertangkap! Skor:", score);
+              }
+
+              updatePanel();
+            }
+
+            // hapus buah jika jatuh ke tanah
+            if (buahRect.top > window.innerHeight - 50) {
+              $(id).remove();
+              clearInterval(timer2);
+            }
+          }, 100);
+
+          // kurangi waktu setiap detik
+          time--;
+          updatePanel();
+
+          // ubah background sesuai waktu
+          if (time < 15) {
+            $("body").css("background-image", "url('evening.jfif')");
+          } else if (time < 30) {
+            $("body").css("background-image", "url('afternoon.jfif')");
+          } else if (time < 45) {
+            $("body").css("background-image", "url('noon.jfif')");
+          } else {
+            $("body").css("background-image", "url('morning.jfif')");
+          }
+        }, 1000);
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="keranjang">
+      <img src="bucket.jfif" width="100px" />
+    </div>
+  </body>
+</html>
